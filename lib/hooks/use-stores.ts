@@ -18,6 +18,14 @@ export function useStore(id: number) {
   });
 }
 
+export function useStoreMedia(storeId: number) {
+  return useQuery({
+    queryKey: ['store-media', storeId],
+    queryFn: () => storesApi.getMediaForStore(storeId),
+    enabled: !!storeId,
+  });
+}
+
 export function useStoreBySlug(slug: string) {
   return useQuery({
     queryKey: ['store', 'slug', slug],

@@ -10,12 +10,30 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Plus, Store } from 'lucide-react';
+import { Store as StoreType } from '@/lib/types';
+import { useQueries } from '@tanstack/react-query';
+import { storesApi } from '@/lib/api';
 
 export default function StoresPage() {
   const { data: stores = [], isLoading, error, refetch } = useStores();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredStores = stores.filter((store) =>
+  // Fetch media for all stores
+  const mediaQueries = useQueries({
+    queries: stores.map((store) => ({
+      queryKey: ['store-media', store.id],
+      queryFn: () => storesApi.getMediaForStore(store.id),
+      enabled: !!store.id,
+    })),
+  });
+
+  // Combine stores with their media
+  const storesWithMedia: StoreType[] = stores.map((store, index) => ({
+    ...store,
+    media: mediaQueries[index]?.data || [],
+  }));
+
+  const filteredStores = storesWithMedia.filter((store) =>
     store.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 

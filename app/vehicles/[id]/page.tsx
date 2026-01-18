@@ -1,11 +1,12 @@
 'use client';
 
 import { use } from 'react';
-import { useVehicleAd, useDeleteVehicleAd } from '@/lib/hooks/use-vehicle-ads';
+import { useVehicleAd, useDeleteVehicleAd, useVehicleMedia } from '@/lib/hooks/use-vehicle-ads';
 import { LoadingPage } from '@/components/ui/loading';
 import { ErrorState } from '@/components/ui/error-state';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ImageGallery } from '@/components/ui/image-gallery';
 import { formatCurrency } from '@/lib/utils/format';
 import {
   ArrowLeft,
@@ -32,6 +33,7 @@ export default function VehicleDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const { data: vehicle, isLoading, error, refetch } = useVehicleAd(Number(id));
+  const { data: media = [] } = useVehicleMedia(Number(id));
   const deleteMutation = useDeleteVehicleAd();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -64,9 +66,13 @@ export default function VehicleDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Card className="mb-6">
-              <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-xl flex items-center justify-center">
-                <Car className="w-32 h-32 text-gray-400" />
-              </div>
+              {media.length > 0 ? (
+                <ImageGallery media={media} alt={vehicle.title} />
+              ) : (
+                <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-xl flex items-center justify-center">
+                  <Car className="w-32 h-32 text-gray-400" />
+                </div>
+              )}
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <h1 className="text-3xl font-bold">{vehicle.title}</h1>

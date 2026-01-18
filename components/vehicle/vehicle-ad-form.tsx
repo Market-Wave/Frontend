@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { ImageUpload, MediaItem } from '@/components/ui/image-upload';
 import { VehicleAd } from '@/lib/types';
 import { useBrands, useModelsByBrand } from '@/lib/hooks/use-brands';
 import { useCategories, useBodyTypes } from '@/lib/hooks/use-categories';
@@ -37,7 +38,7 @@ type VehicleAdFormData = z.infer<typeof vehicleAdSchema>;
 
 interface VehicleAdFormProps {
   initialData?: VehicleAd;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any, media: MediaItem[]) => void;
   isLoading?: boolean;
 }
 
@@ -45,6 +46,25 @@ export function VehicleAdForm({ initialData, onSubmit, isLoading }: VehicleAdFor
   const [selectedBrandId, setSelectedBrandId] = useState<number | null>(
     initialData?.brandId || null
   );
+  const [media, setMedia] = useState<MediaItem[]>(
+    initialData?.media?.map((m) => ({
+      id: m.id,
+      url: m.url,
+      mediaType: m.mediaType,
+      mediaView: m.mediaView,
+      sortOrder: m.sortOrder,
+      isNew: false,
+    })) || []
+  );
+
+  const vehicleMediaViews = [
+    { value: 'EXTERIOR', label: 'Exterior' },
+    { value: 'INTERIOR', label: 'Interior' },
+    { value: 'DASHBOARD', label: 'Dashboard' },
+    { value: 'ENGINE', label: 'Engine' },
+    { value: 'TRUNK', label: 'Trunk' },
+    { value: 'WHEELS', label: 'Wheels' },
+  ];
 
   const { data: brands = [] } = useBrands();
   const { data: models = [] } = useModelsByBrand(selectedBrandId!);
@@ -82,7 +102,7 @@ export function VehicleAdForm({ initialData, onSubmit, isLoading }: VehicleAdFor
       bodyTypeId: Number(data.bodyTypeId),
       categoryId: Number(data.categoryId),
       ownerId: '550e8400-e29b-41d4-a716-446655440000', // Mock owner ID
-    });
+    }, media);
   };
 
   return (
@@ -291,6 +311,15 @@ export function VehicleAdForm({ initialData, onSubmit, isLoading }: VehicleAdFor
             className="mt-2"
           />
         </div>
+      </div>
+
+      <div className="md:col-span-2">
+        <ImageUpload
+          value={media}
+          onChange={setMedia}
+          mediaViews={vehicleMediaViews}
+          maxFiles={10}
+        />
       </div>
 
       <div className="flex justify-end gap-3 pt-6 border-t">

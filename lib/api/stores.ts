@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Store } from '../types';
+import { Store, StoreMedia } from '../types';
 
 export const storesApi = {
   getAll: async (): Promise<Store[]> => {
@@ -41,5 +41,19 @@ export const storesApi = {
 
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/stores/${id}`);
+  },
+
+  getMediaForStore: async (storeId: number): Promise<StoreMedia[]> => {
+    const { data } = await apiClient.get(`/store-media/store/${storeId}`);
+    return data;
+  },
+
+  addMedia: async (media: Omit<StoreMedia, 'id'>): Promise<StoreMedia> => {
+    const { data } = await apiClient.post('/store-media', media);
+    return data;
+  },
+
+  deleteMedia: async (mediaId: number): Promise<void> => {
+    await apiClient.delete(`/store-media/${mediaId}`);
   },
 };

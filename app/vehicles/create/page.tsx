@@ -3,17 +3,46 @@
 import { useRouter } from 'next/navigation';
 import { VehicleAdForm } from '@/components/vehicle/vehicle-ad-form';
 import { useCreateVehicleAd } from '@/lib/hooks/use-vehicle-ads';
+import { vehicleAdsApi } from '@/lib/api';
+import { MediaItem } from '@/components/ui/image-upload';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function CreateVehicleAdPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const createMutation = useCreateVehicleAd();
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = async (data: any, media: MediaItem[]) => {
     createMutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: async (createdAd) => {
+        // Upload media after ad is created
+        if (media.length > 0) {
+          try {
+            await Promise.all(
+              media.map((item) =>
+                vehicleAdsApi.addMedia({
+                  adId: createdAd.id,
+                  url: item.url,
+                  mediaType: item.mediaType,
+                  mediaView: item.mediaView,
+                  sortOrder: item.sortOrder,
+                })
+              )
+            );
+            // Invalidate queries to refresh data
+            await queryClient.invalidateQueries({ queryKey: ['vehicle-media', createdAd.id] });
+            await queryClient.invalidateQueries({ queryKey: ['vehicle-ad', createdAd.id] });
+            toast.success('Vehicle ad and media uploaded successfully!');
+          } catch (error) {
+            toast.error('Ad created but some media failed to upload');
+          }
+        }
+        // Invalidate all vehicle queries
+        await queryClient.invalidateQueries({ queryKey: ['vehicle-ads'] });
         router.push('/vehicles');
       },
     });

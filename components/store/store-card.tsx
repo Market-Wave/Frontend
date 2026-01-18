@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Store as StoreType } from '@/lib/types';
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
+import Image from 'next/image';
 
 interface StoreCardProps {
   store: StoreType;
@@ -12,11 +13,28 @@ interface StoreCardProps {
 }
 
 export function StoreCard({ store, className }: StoreCardProps) {
+  const firstMedia = store.media?.[0];
+
   return (
     <Link href={`/stores/${store.id}`}>
       <Card className={cn('hover:shadow-lg transition-shadow cursor-pointer h-full', className)}>
-        <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-xl flex items-center justify-center">
-          <Store className="w-16 h-16 text-blue-500" />
+        <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-xl flex items-center justify-center relative overflow-hidden">
+          {firstMedia ? (
+            <>
+              <Image
+                src={firstMedia.url}
+                alt={store.name}
+                fill
+                className="object-cover"
+              />
+              {/* Media Tag */}
+              <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium z-10">
+                {firstMedia.mediaView}
+              </div>
+            </>
+          ) : (
+            <Store className="w-16 h-16 text-blue-500" />
+          )}
         </div>
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">

@@ -18,6 +18,14 @@ export function useVehicleAd(id: number) {
   });
 }
 
+export function useVehicleMedia(adId: number) {
+  return useQuery({
+    queryKey: ['vehicle-media', adId],
+    queryFn: () => vehicleAdsApi.getMediaForAd(adId),
+    enabled: !!adId,
+  });
+}
+
 export function useVehicleAdsByOwner(ownerId: string) {
   return useQuery({
     queryKey: ['vehicle-ads', 'owner', ownerId],

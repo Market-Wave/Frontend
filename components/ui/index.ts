@@ -9,3 +9,5 @@ export * from './loading';
 export * from './error-state';
 export * from './search-input';
 export * from './empty-state';
+export * from './image-gallery';
+export * from './image-upload';

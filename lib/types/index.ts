@@ -27,6 +27,7 @@ export interface VehicleAd {
   status: string;
   isBiddingEnabled?: boolean;
   isPreorderEnabled?: boolean;
+  media?: VehicleMedia[];
 }
 
 export interface Store {
@@ -41,6 +42,7 @@ export interface Store {
   longitude?: number;
   address?: string;
   status: string;
+  media?: StoreMedia[];
 }
 
 export interface VehicleBrand {
@@ -72,17 +74,19 @@ export interface AdCategory {
 export interface StoreMedia {
   id: number;
   storeId: number;
+  url: string;
   mediaType: string;
-  mediaUrl: string;
-  displayOrder: number;
+  mediaView: string;
+  sortOrder: number;
 }
 
 export interface VehicleMedia {
   id: number;
-  vehicleAdId: number;
+  adId: number;
+  url: string;
   mediaType: string;
-  mediaUrl: string;
-  displayOrder: number;
+  mediaView: string;
+  sortOrder: number;
 }
 
 export interface StorePageConfig {

@@ -8,7 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { ImageUpload, MediaItem } from '@/components/ui/image-upload';
 import { Store } from '@/lib/types';
+import { useState } from 'react';
 
 const storeSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -24,11 +26,30 @@ type StoreFormData = z.infer<typeof storeSchema>;
 
 interface StoreFormProps {
   initialData?: Store;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any, media: MediaItem[]) => void;
   isLoading?: boolean;
 }
 
 export function StoreForm({ initialData, onSubmit, isLoading }: StoreFormProps) {
+  const [media, setMedia] = useState<MediaItem[]>(
+    initialData?.media?.map((m) => ({
+      id: m.id,
+      url: m.url,
+      mediaType: m.mediaType,
+      mediaView: m.mediaView,
+      sortOrder: m.sortOrder,
+      isNew: false,
+    })) || []
+  );
+
+  const storeMediaViews = [
+    { value: 'LOGO', label: 'Logo' },
+    { value: 'BANNER', label: 'Banner' },
+    { value: 'STOREFRONT', label: 'Storefront' },
+    { value: 'INTERIOR', label: 'Interior' },
+    { value: 'GALLERY', label: 'Gallery' },
+  ];
+
   const {
     register,
     handleSubmit,
@@ -66,7 +87,7 @@ export function StoreForm({ initialData, onSubmit, isLoading }: StoreFormProps) 
     onSubmit({
       ...data,
       ownerId: '550e8400-e29b-41d4-a716-446655440000', // Mock owner ID
-    });
+    }, media);
   };
 
   return (
@@ -155,6 +176,15 @@ export function StoreForm({ initialData, onSubmit, isLoading }: StoreFormProps) 
             <option value="INACTIVE">Inactive</option>
           </Select>
         </div>
+      </div>
+
+      <div className="md:col-span-2">
+        <ImageUpload
+          value={media}
+          onChange={setMedia}
+          mediaViews={storeMediaViews}
+          maxFiles={10}
+        />
       </div>
 
       <div className="flex justify-end gap-3 pt-6 border-t">

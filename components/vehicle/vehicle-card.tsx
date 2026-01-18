@@ -6,6 +6,7 @@ import { VehicleAd } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils/format';
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
+import Image from 'next/image';
 
 interface VehicleCardProps {
   vehicle: VehicleAd;
@@ -13,11 +14,28 @@ interface VehicleCardProps {
 }
 
 export function VehicleCard({ vehicle, className }: VehicleCardProps) {
+  const firstMedia = vehicle.media?.[0];
+
   return (
     <Link href={`/vehicles/${vehicle.id}`}>
       <Card className={cn('hover:shadow-lg transition-shadow cursor-pointer', className)}>
-        <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-xl flex items-center justify-center">
-          <Car className="w-16 h-16 text-gray-400" />
+        <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-xl flex items-center justify-center relative overflow-hidden">
+          {firstMedia ? (
+            <>
+              <Image
+                src={firstMedia.url}
+                alt={vehicle.title}
+                fill
+                className="object-cover"
+              />
+              {/* Media Tag */}
+              <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium z-10">
+                {firstMedia.mediaView}
+              </div>
+            </>
+          ) : (
+            <Car className="w-16 h-16 text-gray-400" />
+          )}
         </div>
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">

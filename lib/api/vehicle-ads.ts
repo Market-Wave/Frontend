@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { VehicleAd } from '../types';
+import { VehicleAd, VehicleMedia } from '../types';
 
 export const vehicleAdsApi = {
   getAll: async (): Promise<VehicleAd[]> => {
@@ -48,5 +48,19 @@ export const vehicleAdsApi = {
 
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/vehicle-ads/${id}`);
+  },
+
+  getMediaForAd: async (adId: number): Promise<VehicleMedia[]> => {
+    const { data } = await apiClient.get(`/vehicle-media/ad/${adId}`);
+    return data;
+  },
+
+  addMedia: async (media: Omit<VehicleMedia, 'id'>): Promise<VehicleMedia> => {
+    const { data } = await apiClient.post('/vehicle-media', media);
+    return data;
+  },
+
+  deleteMedia: async (mediaId: number): Promise<void> => {
+    await apiClient.delete(`/vehicle-media/${mediaId}`);
   },
 };

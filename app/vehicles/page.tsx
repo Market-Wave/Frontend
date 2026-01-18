@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useVehicleAds } from '@/lib/hooks/use-vehicle-ads';
+import { useState, useEffect } from 'react';
+import { useVehicleAds, useVehicleMedia } from '@/lib/hooks/use-vehicle-ads';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { VehicleFilters } from '@/components/vehicle/vehicle-filters';
 import { SearchInput } from '@/components/ui/search-input';
@@ -11,13 +11,31 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
+import { VehicleAd } from '@/lib/types';
+import { useQueries } from '@tanstack/react-query';
+import { vehicleAdsApi } from '@/lib/api';
 
 export default function VehiclesPage() {
   const { data: vehicles = [], isLoading, error, refetch } = useVehicleAds();
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
 
-  const filteredVehicles = vehicles.filter((vehicle) => {
+  // Fetch media for all vehicles
+  const mediaQueries = useQueries({
+    queries: vehicles.map((vehicle) => ({
+      queryKey: ['vehicle-media', vehicle.id],
+      queryFn: () => vehicleAdsApi.getMediaForAd(vehicle.id),
+      enabled: !!vehicle.id,
+    })),
+  });
+
+  // Combine vehicles with their media
+  const vehiclesWithMedia: VehicleAd[] = vehicles.map((vehicle, index) => ({
+    ...vehicle,
+    media: mediaQueries[index]?.data || [],
+  }));
+
+  const filteredVehicles = vehiclesWithMedia.filter((vehicle) => {
     const matchesSearch = vehicle.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesPrice =
       (!filters.minPrice || vehicle.price >= Number(filters.minPrice)) &&

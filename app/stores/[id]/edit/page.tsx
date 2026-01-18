@@ -2,26 +2,73 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { StoreForm } from '@/components/store/store-form';
-import { useStore, useUpdateStore } from '@/lib/hooks/use-stores';
+import { useStore, useUpdateStore, useStoreMedia } from '@/lib/hooks/use-stores';
+import { storesApi } from '@/lib/api';
+import { MediaItem } from '@/components/ui/image-upload';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loading } from '@/components/ui/loading';
 import { ErrorState } from '@/components/ui/error-state';
+import { toast } from 'sonner';
+import { useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function EditStorePage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const params = useParams();
   const storeId = Number(params.id);
   
   const { data: store, isLoading, error } = useStore(storeId);
+  const { data: existingMedia = [] } = useStoreMedia(storeId);
   const updateMutation = useUpdateStore();
 
-  const handleSubmit = (data: any) => {
+  // Combine store data with media
+  const storeWithMedia = useMemo(() => {
+    if (!store) return null;
+    return {
+      ...store,
+      media: existingMedia,
+    };
+  }, [store, existingMedia]);
+
+  const handleSubmit = async (data: any, media: MediaItem[]) => {
     updateMutation.mutate(
       { id: storeId, data },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
+          // Handle media updates
+          try {
+            const existingIds = existingMedia.map((m) => m.id);
+            const currentIds = media.filter((m) => m.id).map((m) => m.id!);
+            
+            // Delete removed media
+            const toDelete = existingIds.filter((id) => !currentIds.includes(id));
+            await Promise.all(toDelete.map((id) => storesApi.deleteMedia(id)));
+
+            // Add new media
+            const newMedia = media.filter((m) => m.isNew);
+            await Promise.all(
+              newMedia.map((item) =>
+                storesApi.addMedia({
+                  storeId,
+                  url: item.url,
+                  mediaType: item.mediaType,
+                  mediaView: item.mediaView,
+                  sortOrder: item.sortOrder,
+                })
+              )
+            );
+            
+            toast.success('Store updated successfully!');
+          } catch (error) {
+            toast.error('Store updated but some media changes failed');
+          }
+          // Invalidate queries to refresh data
+          await queryClient.invalidateQueries({ queryKey: ['store-media', storeId] });
+          await queryClient.invalidateQueries({ queryKey: ['store', storeId] });
+          await queryClient.invalidateQueries({ queryKey: ['stores'] });
           router.push(`/stores/${storeId}`);
         },
       }
@@ -32,7 +79,7 @@ export default function EditStorePage() {
     return <Loading />;
   }
 
-  if (error || !store) {
+  if (error || !storeWithMedia) {
     return (
       <ErrorState
         title="Store Not Found"
@@ -63,7 +110,7 @@ export default function EditStorePage() {
           </CardHeader>
           <CardContent>
             <StoreForm
-              initialData={store}
+              initialData={storeWithMedia}
               onSubmit={handleSubmit}
               isLoading={updateMutation.isPending}
             />

@@ -1,7 +1,7 @@
 'use client';
 
 import { use } from 'react';
-import { useStore, useDeleteStore } from '@/lib/hooks/use-stores';
+import { useStore, useDeleteStore, useStoreMedia } from '@/lib/hooks/use-stores';
 import { useVehicleAdsByStore } from '@/lib/hooks/use-vehicle-ads';
 import { LoadingPage } from '@/components/ui/loading';
 import { ErrorState } from '@/components/ui/error-state';
@@ -9,6 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VehicleCard } from '@/components/vehicle/vehicle-card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ImageGallery } from '@/components/ui/image-gallery';
+import { VehicleAd } from '@/lib/types';
+import { useQueries } from '@tanstack/react-query';
+import { vehicleAdsApi } from '@/lib/api';
 import {
   ArrowLeft,
   Store,
@@ -30,11 +34,27 @@ export default function StoreDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const { data: store, isLoading, error, refetch } = useStore(Number(id));
+  const { data: media = [] } = useStoreMedia(Number(id));
   const { data: vehicles = [], isLoading: vehiclesLoading } = useVehicleAdsByStore(
     Number(id)
   );
   const deleteMutation = useDeleteStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Fetch media for all vehicles
+  const vehicleMediaQueries = useQueries({
+    queries: vehicles.map((vehicle) => ({
+      queryKey: ['vehicle-media', vehicle.id],
+      queryFn: () => vehicleAdsApi.getMediaForAd(vehicle.id),
+      enabled: !!vehicle.id,
+    })),
+  });
+
+  // Combine vehicles with their media
+  const vehiclesWithMedia: VehicleAd[] = vehicles.map((vehicle, index) => ({
+    ...vehicle,
+    media: vehicleMediaQueries[index]?.data || [],
+  }));
 
   const handleDelete = () => {
     deleteMutation.mutate(Number(id), {
@@ -65,9 +85,13 @@ export default function StoreDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Card className="mb-6">
-              <div className="aspect-[3/1] bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-xl flex items-center justify-center">
-                <Store className="w-24 h-24 text-blue-500" />
-              </div>
+              {media.length > 0 ? (
+                <ImageGallery media={media} alt={store.name} />
+              ) : (
+                <div className="aspect-[3/1] bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-xl flex items-center justify-center">
+                  <Store className="w-24 h-24 text-blue-500" />
+                </div>
+              )}
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -110,20 +134,20 @@ export default function StoreDetailPage({
               <CardHeader>
                 <CardTitle>Vehicle Inventory</CardTitle>
                 <p className="text-gray-500 text-sm mt-1">
-                  {vehicles.length} vehicles listed
+                  {vehiclesWithMedia.length} vehicles listed
                 </p>
               </CardHeader>
               <CardContent>
                 {vehiclesLoading ? (
                   <LoadingPage />
-                ) : vehicles.length === 0 ? (
+                ) : vehiclesWithMedia.length === 0 ? (
                   <EmptyState
                     title="No vehicles listed"
                     description="This store hasn't listed any vehicles yet"
                   />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {vehicles.map((vehicle) => (
+                    {vehiclesWithMedia.map((vehicle) => (
                       <VehicleCard key={vehicle.id} vehicle={vehicle} />
                     ))}
                   </div>

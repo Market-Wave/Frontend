@@ -12,6 +12,7 @@ export interface VehicleAd {
   model?: VehicleModel;
   bodyType?: BodyType;
   category?: AdCategory;
+  store?: Store;
   year: number;
   mileage: number;
   fuelType: string;

@@ -1,6 +1,6 @@
 'use client';
 
-import { Car, MapPin, Calendar, Gauge } from 'lucide-react';
+import { Car, MapPin, Calendar, Gauge, Store } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { VehicleAd } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils/format';
@@ -86,6 +86,13 @@ export function VehicleCard({ vehicle, className }: VehicleCardProps) {
             <MapPin className="w-4 h-4" />
             {vehicle.city}, {vehicle.country}
           </div>
+
+          {vehicle.store && (
+            <div className="flex items-center gap-1 text-sm text-blue-600 mb-3">
+              <Store className="w-4 h-4" />
+              <span className="font-medium">{vehicle.store.name}</span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between pt-3 border-t">
             <div>

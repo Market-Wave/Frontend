@@ -19,6 +19,10 @@ import {
   DollarSign,
   Edit,
   Trash2,
+  Store as StoreIcon,
+  User,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -190,6 +194,67 @@ export default function VehicleDetailPage({
                     <div className="flex justify-between py-2 border-b">
                       <span className="text-gray-500">Address:</span>
                       <span className="font-medium">{vehicle.address}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Seller Information */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                    {vehicle.store ? (
+                      <>
+                        <StoreIcon className="w-5 h-5 text-blue-600" />
+                        Seller Information
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-5 h-5 text-blue-600" />
+                        Private Seller
+                      </>
+                    )}
+                  </h3>
+                  {vehicle.store ? (
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm text-gray-500">Store Name</p>
+                        <Link 
+                          href={`/stores/${vehicle.store.id}`}
+                          className="font-semibold text-blue-600 hover:text-blue-700"
+                        >
+                          {vehicle.store.name}
+                        </Link>
+                      </div>
+                      {vehicle.store.description && (
+                        <div>
+                          <p className="text-sm text-gray-500">About</p>
+                          <p className="text-sm">{vehicle.store.description}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm text-gray-500">Location</p>
+                        <p className="text-sm font-medium">
+                          {vehicle.store.city}, {vehicle.store.country}
+                        </p>
+                      </div>
+                      {vehicle.store.address && (
+                        <div>
+                          <p className="text-sm text-gray-500">Address</p>
+                          <p className="text-sm">{vehicle.store.address}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm text-gray-500">Owner ID</p>
+                        <p className="text-sm font-medium font-mono">{vehicle.ownerId}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Location</p>
+                        <p className="text-sm font-medium">
+                          {vehicle.city}, {vehicle.country}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>

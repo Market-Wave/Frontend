@@ -258,8 +258,10 @@ export function VehicleAdForm({ initialData, onSubmit, isLoading }: VehicleAdFor
           <Select {...register('condition')} className="mt-2">
             <option value="">Select condition</option>
             <option value="New">New</option>
-            <option value="Used">Used</option>
-            <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+            <option value="Excellent">Excellent</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
           </Select>
           {errors.condition && (
             <p className="text-red-500 text-sm mt-1">{errors.condition.message}</p>

@@ -32,10 +32,10 @@ export function useModel(id: number) {
   });
 }
 
-export function useModelsByBrand(brandId: number) {
+export function useModelsByBrand(brandId: number | undefined) {
   return useQuery({
     queryKey: ['models', 'brand', brandId],
-    queryFn: () => modelsApi.getByBrand(brandId),
+    queryFn: () => modelsApi.getByBrand(brandId!),
     enabled: !!brandId,
   });
 }
